@@ -109,11 +109,50 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
+        board.setViewingPerspective(side);
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
+        for(int col = 0; col < board.size(); col+=1){
+            for(int row = board.size()-1; row >= 0; row-=1){
+                Tile t1 = board.tile(col,row);
+                if(t1 != null){
+                    for(int row2 = row-1; row2 >= 0; row2-=1){
+                        Tile t2 = board.tile(col , row2);
+                        if(t2 != null){
+                            if(t1.value() == t2.value()){
+                                board.move(col,row,t2);
+                                changed = true;
+                                row = row2;
+                                score += 2 * t1.value();
+                                break;
+                            }else{
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int col = 0; col < board.size(); col+=1){
+            for(int row = board.size()-1; row >= 0; row-=1){
+                Tile t1 = board.tile(col,row);
+                if(t1 == null){
+                    for(int row2 = row-1; row2 >= 0; row2-=1){
+                        Tile t2 = board.tile(col , row2);
+                        if(t2 != null){
+                            board.move(col , row , t2);
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -138,6 +177,13 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        for(int j=0;j < b.size(); j++){
+            for(int i =0 ; i< b.size(); i++){
+                if(b.tile(j , i) ==null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +194,13 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for(int i=0;i<b.size();i++){
+            for(int j=0;j<b.size();j++){
+                if(b.tile(i,j)!= null && b.tile(i , j).value() == MAX_PIECE ) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -159,12 +212,37 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        int[] x = {-1 , 1};
+        if(emptySpaceExists(b)){
+            return true;
+        }
+        for(int i = 0;i<b.size();i++) {
+            for(int j = 0;j<b.size();j++) {
+                boolean is_adjacent = adjacent(i , j ,b);
+                if(is_adjacent)return true;
+            }
+        }
         return false;
     }
 
+    public static boolean adjacent(int i , int j , Board b){
+        if (i > 0 && b.tile(i, j).value() == b.tile(i - 1, j).value()) {
+            return true; // 检查上方
+        }
+        if (i < b.size() - 1 && b.tile(i, j).value() == b.tile(i + 1, j).value()) {
+            return true; // 检查下方
+        }
+        if (j > 0 && b.tile(i, j).value() == b.tile(i, j - 1).value()) {
+            return true; // 检查左边
+        }
+        if (j < b.size() - 1 && b.tile(i, j).value() == b.tile(i, j + 1).value()) {
+            return true; // 检查右边
+        }
+        return false;
+    }
 
     @Override
-     /** Returns the model as a string, used for debugging. */
+    /** Returns the model as a string, used for debugging. */
     public String toString() {
         Formatter out = new Formatter();
         out.format("%n[%n");
@@ -201,3 +279,4 @@ public class Model extends Observable {
         return toString().hashCode();
     }
 }
+
