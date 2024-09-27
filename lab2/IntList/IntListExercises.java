@@ -15,11 +15,11 @@ public class IntListExercises {
                 head.first += c;
                 break;
             }
-            else{
+            if(head.rest != null){
                 head.first += c;
                 head = head.rest;
             }
-
+            else{break;}
         }
     }
 
